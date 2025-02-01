@@ -119,6 +119,56 @@
 				height: 100%;
 				min-height: 400px;
 			}
+
+			.info-icon {
+				margin-left: auto;
+				font-size: 24px;
+				cursor: pointer;
+				color: rgb(255, 176, 131);
+			}
+
+			.tooltip {
+				position: relative;
+				display: inline-block;
+			}
+
+			.tooltip .tooltiptext {
+				visibility: hidden;
+				width: 200px;
+				background-color: #333;
+				color: #fff;
+				text-align: center;
+				border-radius: 6px;
+				padding: 5px;
+				position: absolute;
+				z-index: 1;
+				right: 0;
+				top: 100%;
+			}
+
+			.tooltip:hover .tooltiptext {
+				visibility: visible;
+			}
+
+			.timer-controls {
+				display: flex;
+				gap: 10px;
+				margin-top: 20px;
+			}
+
+			.timer-controls button {
+				background: rgb(255, 176, 131);
+				border: none;
+				padding: 10px 20px;
+				border-radius: 5px;
+				cursor: pointer;
+				font-family: "Space Grotesk", serif;
+			}
+
+			.countdown-input {
+				margin-top: 20px;
+				font-size: 1.5rem;
+			}
 		</style>
 		<script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
 		<script src="https://www.desmos.com/api/v1.10/3d.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
@@ -131,11 +181,16 @@
 			<select onchange="NewTool();" id="WhatToolDoYouWantToUse">
 				<option>White Bord</option>
 				<option>Time</option>
-				<option>Calc and Graph</option>
+				<option>Calculator</option>
+				<option>Graphing</option>
 			</select>
 
-			<p>&nbsp;&nbsp; --- &nbsp;&nbsp;</p>
+			<p>&nbsp;&nbsp; &nbsp;&nbsp;</p>
 			<div id="options"></div>
+			<div class="tooltip info-icon">
+				ℹ
+				<span class="tooltiptext">Created by ATB for educational purposes. A collection of useful tools for students and teachers.</span>
+			</div>
 		</div>
 		<hr />
 		<div id="root"></div>
@@ -153,6 +208,20 @@
 				"Outline Map Of India":
 					"https://cloud-f745p5pob-hack-club-bot.vercel.app/0image.png",
 			};
+
+			let stopwatchInterval;
+			let stopwatchTime = 0;
+			let countdownInterval;
+
+			function formatTime(ms) {
+				const hrs = Math.floor(ms / 3600000);
+				const mins = Math.floor((ms % 3600000) / 60000);
+				const secs = Math.floor((ms % 60000) / 1000);
+				return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(
+					2,
+					"0"
+				)}:${String(secs).padStart(2, "0")}`;
+			}
 
 			function UpdateDateANdTime() {
 				var date = new Date();
@@ -179,11 +248,113 @@
 				}
 			}
 
+			function updateTimeOptions() {
+				options.innerHTML = `
+					<select onchange="switchTimeMode(this.value);" id="timeOptions">
+						<option>Current Time</option>
+						<option>Stopwatch</option>
+						<option>Countdown</option>
+					</select>
+				`;
+				switchTimeMode("Current Time");
+			}
+
+			function switchTimeMode(mode) {
+				clearInterval(ModeCurrunt);
+				clearInterval(stopwatchInterval);
+				clearInterval(countdownInterval);
+
+				switch (mode) {
+					case "Current Time":
+						root.className = "BodyTimeMode";
+						UpdateDateANdTime();
+						ModeCurrunt = setInterval(UpdateDateANdTime, 1000);
+						break;
+					case "Stopwatch":
+						stopwatchTime = 0;
+						root.className = "BodyTimeMode";
+						root.innerHTML = `
+							<h1>00:00:00</h1>
+							<div class="timer-controls">
+								<button onclick="startStopwatch()">Start</button>
+								<button onclick="stopStopwatch()">Stop</button>
+								<button onclick="resetStopwatch()">Reset</button>
+							</div>
+						`;
+						break;
+					case "Countdown":
+						root.className = "BodyTimeMode";
+						root.innerHTML = `
+							<h1>00:00:00</h1>
+							<div class="countdown-input">
+								<input type="datetime-local" id="countdownTarget">
+								<button onclick="startCountdown()">Start</button>
+								<button onclick="stopCountdown()">Stop</button>
+							</div>
+						`;
+						break;
+				}
+			}
+
+			// Stopwatch functions
+			function startStopwatch() {
+				if (!stopwatchInterval) {
+					const startTime = Date.now() - stopwatchTime;
+					stopwatchInterval = setInterval(() => {
+						stopwatchTime = Date.now() - startTime;
+						root.querySelector("h1").textContent =
+							formatTime(stopwatchTime);
+					}, 1000);
+				}
+			}
+
+			function stopStopwatch() {
+				clearInterval(stopwatchInterval);
+				stopwatchInterval = null;
+			}
+
+			function resetStopwatch() {
+				stopStopwatch();
+				stopwatchTime = 0;
+				root.querySelector("h1").textContent = "00:00:00";
+			}
+
+			// Countdown functions
+			function startCountdown() {
+				const targetDate = new Date(
+					document.getElementById("countdownTarget").value
+				).getTime();
+
+				function updateCountdown() {
+					const now = new Date().getTime();
+					const distance = targetDate - now;
+
+					if (distance < 0) {
+						stopCountdown();
+						root.querySelector("h1").textContent = "EXPIRED";
+						return;
+					}
+
+					root.querySelector("h1").textContent = formatTime(distance);
+				}
+
+				updateCountdown();
+				countdownInterval = setInterval(updateCountdown, 1000);
+			}
+
+			function stopCountdown() {
+				clearInterval(countdownInterval);
+			}
+
 			function NewTool() {
 				clearInterval(ModeCurrunt);
+				clearInterval(stopwatchInterval);
+				clearInterval(countdownInterval);
+
 				switch (whattool.value) {
 					case "White Bord":
 						options.innerHTML = `
+						SELECT MAP:
 							<select onchange="displayCanvas('#root', backgrounds[document.getElementById('WhiteBordOptions').value]);" id="WhiteBordOptions">
 								<option>Blank</option>
 								<option>Political Map Of India</option>
@@ -201,28 +372,41 @@
 						break;
 
 					case "Time":
-						document.getElementById("root").className =
-							"BodyTimeMode";
-						options.innerHTML = ``;
-						root.innerHTML = `
-						<h2>Date<h2>
-						<h1>Time</h1>
-						`;
-						UpdateDateANdTime();
-						ModeCurrunt = setInterval(UpdateDateANdTime, 1000); // Assign to global variable
+						updateTimeOptions();
 						break;
 
-					case "Calc and Graph":
+					case "Calculator":
 						options.innerHTML = `
+						<select onchange="updateCalculator();" id="calcOptions">
+							<option>Scientific</option>
+							<option>Four Function</option>
+						</select>
+					`;
+						updateCalculator();
+						break;
+
+					case "Graphing":
+						options.innerHTML = `
+						SELECT GRAPH/TOOL
 							<select onchange="updateGraphType();" id="graphOptions">
 								<option>2D Graphing</option>
 								<option>3D Graphing</option>
-								<option>Scientific</option>
-								<option>Four Function</option>
 							</select>
 						`;
 						updateGraphType();
 						break;
+				}
+			}
+
+			function updateCalculator() {
+				root.innerHTML = '<div id="calculator"></div>';
+				const elt = document.getElementById("calculator");
+				const type = document.getElementById("calcOptions").value;
+
+				if (type === "Scientific") {
+					return Desmos.ScientificCalculator(elt);
+				} else {
+					return Desmos.FourFunctionCalculator(elt);
 				}
 			}
 
