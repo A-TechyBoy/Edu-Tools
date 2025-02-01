@@ -3,9 +3,10 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>ATB's School Tools</title>
+		<title>ATB's Edu Tools</title>
 		<style>
 			@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300&family=Walter+Turncoat&display=swap");
+			@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
 
 			html,
 			body {
@@ -180,6 +181,46 @@
 			.countdown-input {
 				margin-top: 20px;
 				font-size: 1.5rem;
+				display: flex;
+				gap: 10px;
+				align-items: center;
+			}
+
+			.countdown-input input {
+				background: #222;
+				border: 2px solid rgb(255, 176, 131);
+				color: white;
+				padding: 8px;
+				border-radius: 5px;
+				font-family: 'Space Grotesk', serif;
+			}
+
+			.timer-display {
+				font-family: 'Roboto Mono', monospace;
+			}
+
+			.progress-bar {
+				width: 100%;
+				height: 4px;
+				background: #333;
+				position: fixed;
+				top: 0;
+				left: 0;
+			}
+
+			.progress-bar-fill {
+				height: 100%;
+				background: rgb(255, 176, 131);
+				width: 0%;
+				transition: width 0.5s;
+			}
+
+			.github-icon {
+				margin-left: 10px;
+				font-size: 24px;
+				cursor: pointer;
+				color: rgb(255, 176, 131);
+				padding: 10px;
 			}
 		</style>
 		<script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
@@ -192,22 +233,27 @@
 		<div id="navBar">
 			<select onchange="NewTool();" id="WhatToolDoYouWantToUse">
 				<option>White Bord</option>
-				<option>Time</option>
+				<option>Timer Tools</option>
 				<option>Calculator</option>
-				<option>Graphing</option>
+				<option>Visualizer</option>
 			</select>
 
 			<p>&nbsp;&nbsp; &nbsp;&nbsp;</p>
 			<div id="options"></div>
 			<div class="tooltip info-icon">
-				ℹ
-				<span class="tooltiptext"
-					>Created by ATB for educational purposes. A collection of
-					useful tools for students and teachers.</span
-				>
+					ℹ
+					<span class="tooltiptext"
+						>Created by ATB for educational purposes. A collection of
+						useful tools for students and teachers.</span
+					>
 			</div>
+			<a href="https://github.com/yourusername/repo" target="_blank" class="tooltip github-icon">
+				⊐
+				<span class="tooltiptext">Collaborate on GitHub!</span>
+			</a>
 		</div>
 		<hr />
+		<div class="progress-bar"><div class="progress-bar-fill"></div></div>
 		<div id="root"></div>
 		<script>
 			var whattool = document.getElementById("WhatToolDoYouWantToUse");
@@ -251,9 +297,9 @@
 				const elt = document.getElementById("calculator");
 
 				switch (graphType) {
-					case "2D Graphing":
+					case "2D Graph":
 						return Desmos.GraphingCalculator(elt);
-					case "3D Graphing":
+					case "3D Graph":
 						return Desmos.Calculator3D(elt);
 					case "Scientific":
 						return Desmos.ScientificCalculator(elt);
@@ -263,15 +309,15 @@
 			}
 
 			function updateTimeOptions() {
+				root.className = "BodyTimeMode";
 				options.innerHTML = `
-				TOOL:
 					<select onchange="switchTimeMode(this.value);" id="timeOptions">
-						<option>Current Time</option>
+						<option>Clock</option>
 						<option>Stopwatch</option>
 						<option>Countdown</option>
 					</select>
 				`;
-				switchTimeMode("Current Time");
+				switchTimeMode("Clock");
 			}
 
 			function switchTimeMode(mode) {
@@ -280,7 +326,7 @@
 				clearInterval(countdownInterval);
 
 				switch (mode) {
-					case "Current Time":
+					case "Clock":
 						root.className = "BodyTimeMode";
 						UpdateDateANdTime();
 						ModeCurrunt = setInterval(UpdateDateANdTime, 1000);
@@ -300,11 +346,12 @@
 					case "Countdown":
 						root.className = "BodyTimeMode";
 						root.innerHTML = `
-							<h1>00:00:00</h1>
-							<div class="countdown-input">
-								<input type="datetime-local" id="countdownTarget">
-								<button onclick="startCountdown()">Start</button>
-								<button onclick="stopCountdown()">Stop</button>
+							<div class="timer-display">
+								<h1>00:00:00</h1>
+								<div class="countdown-input">
+									<input type="number" id="countdownMinutes" placeholder="Minutes" min="1">
+									<button onclick="startCountdown()">Start</button>
+								</div>
 							</div>
 						`;
 						break;
@@ -346,21 +393,32 @@
 
 			// Countdown functions
 			function startCountdown() {
-				const targetDate = new Date(
-					document.getElementById("countdownTarget").value
-				).getTime();
+				const minutes = parseInt(document.getElementById("countdownMinutes").value);
+				if (!minutes || minutes <= 0) {
+					root.querySelector("h1").textContent = "00:00:00";
+					return;
+				}
+
+				const targetDate = Date.now() + (minutes * 60000);
+				const totalTime = minutes * 60000;
 
 				function updateCountdown() {
-					const now = new Date().getTime();
+					const now = Date.now();
 					const distance = targetDate - now;
 
 					if (distance < 0) {
 						stopCountdown();
-						root.querySelector("h1").textContent = "EXPIRED";
+						root.querySelector("h1").textContent = "TIME UP";
+						document.querySelector(".progress-bar-fill").style.width = "0%";
 						return;
 					}
 
-					root.querySelector("h1").textContent = formatTime(distance);
+					const timeLeft = formatTime(distance);
+					root.querySelector("h1").textContent = timeLeft;
+
+					// Update progress bar
+					const percentage = ((totalTime - distance) / totalTime) * 100;
+					document.querySelector(".progress-bar-fill").style.width = `${percentage}%`;
 				}
 
 				updateCountdown();
@@ -379,7 +437,7 @@
 				switch (whattool.value) {
 					case "White Bord":
 						options.innerHTML = `
-						SELECT MAP:
+						Background:
 							<select onchange="displayCanvas('#root', backgrounds[document.getElementById('WhiteBordOptions').value]);" id="WhiteBordOptions">
 								<option>Blank</option>
 								<option>Political Map Of India</option>
@@ -396,13 +454,12 @@
 						);
 						break;
 
-					case "Time":
+					case "Timer Tools":
 						updateTimeOptions();
 						break;
 
 					case "Calculator":
 						options.innerHTML = `
-						WHICH CALCULATOR:
 						<select onchange="updateCalculator();" id="calcOptions">
 							<option>Scientific</option>
 							<option>Four Function</option>
@@ -411,12 +468,11 @@
 						updateCalculator();
 						break;
 
-					case "Graphing":
+					case "Visualizer":
 						options.innerHTML = `
-						SELECT GRAPH:
 							<select onchange="updateGraphType();" id="graphOptions">
-								<option>2D Graphing</option>
-								<option>3D Graphing</option>
+								<option>2D Graph</option>
+								<option>3D Graph</option>
 							</select>
 						`;
 						updateGraphType();
