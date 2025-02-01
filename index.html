@@ -200,9 +200,12 @@
 			<p>&nbsp;&nbsp; &nbsp;&nbsp;</p>
 			<div id="options"></div>
 			<div class="tooltip info-icon">
-					ℹ
-					<span class="tooltiptext">Created by ATB for educational purposes. A collection of useful tools for students and teachers.</span>
-				</div>
+				ℹ
+				<span class="tooltiptext"
+					>Created by ATB for educational purposes. A collection of
+					useful tools for students and teachers.</span
+				>
+			</div>
 		</div>
 		<hr />
 		<div id="root"></div>
@@ -229,7 +232,9 @@
 				const hrs = Math.floor(ms / 3600000);
 				const mins = Math.floor((ms % 3600000) / 60000);
 				const secs = Math.floor((ms % 60000) / 1000);
-				return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+				return `${hrs.toString().padStart(2, "0")}:${mins
+					.toString()
+					.padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 			}
 
 			function UpdateDateANdTime() {
@@ -259,6 +264,7 @@
 
 			function updateTimeOptions() {
 				options.innerHTML = `
+				TOOL:
 					<select onchange="switchTimeMode(this.value);" id="timeOptions">
 						<option>Current Time</option>
 						<option>Stopwatch</option>
@@ -314,28 +320,28 @@
 						root.querySelector("h1").textContent =
 							formatTime(stopwatchTime);
 					}, 10); // Update more frequently for smoother display
-					
-					document.getElementById('startBtn').disabled = true;
-					document.getElementById('stopBtn').disabled = false;
-					document.getElementById('resetBtn').disabled = true;
+
+					document.getElementById("startBtn").disabled = true;
+					document.getElementById("stopBtn").disabled = false;
+					document.getElementById("resetBtn").disabled = true;
 				}
 			}
 
 			function stopStopwatch() {
 				clearInterval(stopwatchInterval);
 				stopwatchInterval = null;
-				document.getElementById('startBtn').disabled = false;
-				document.getElementById('stopBtn').disabled = true;
-				document.getElementById('resetBtn').disabled = false;
+				document.getElementById("startBtn").disabled = false;
+				document.getElementById("stopBtn").disabled = true;
+				document.getElementById("resetBtn").disabled = false;
 			}
 
 			function resetStopwatch() {
 				stopStopwatch();
 				stopwatchTime = 0;
 				root.querySelector("h1").textContent = "00:00:00";
-				document.getElementById('startBtn').disabled = false;
-				document.getElementById('stopBtn').disabled = true;
-				document.getElementById('resetBtn').disabled = false;
+				document.getElementById("startBtn").disabled = false;
+				document.getElementById("stopBtn").disabled = true;
+				document.getElementById("resetBtn").disabled = false;
 			}
 
 			// Countdown functions
@@ -396,6 +402,7 @@
 
 					case "Calculator":
 						options.innerHTML = `
+						WHICH CALCULATOR:
 						<select onchange="updateCalculator();" id="calcOptions">
 							<option>Scientific</option>
 							<option>Four Function</option>
@@ -406,7 +413,7 @@
 
 					case "Graphing":
 						options.innerHTML = `
-						SELECT GRAPH/TOOL
+						SELECT GRAPH:
 							<select onchange="updateGraphType();" id="graphOptions">
 								<option>2D Graphing</option>
 								<option>3D Graphing</option>
